@@ -9,7 +9,7 @@ async function registerUser(userData) {
         // Check if user with the given email already exists
         const existingUser = await User.findOne({ email });
         if (existingUser) {
-            throw new Error('User with this email already exists');
+            res.status(400).json({ error: 'User with this email already exists' });
         }
 
         // Encrypt the password
@@ -35,14 +35,14 @@ async function loginUser(email, password) {
         const user = await User.findOne({ email });
 
         if (!user) {
-            throw new Error('Wrong Email!');
+            res.status(404).json({ error: 'User not found' });
         }
 
         const bytes = CryptoJS.AES.decrypt(user.password, process.env.SECRET_KEY);
         const originalPassword = bytes.toString(CryptoJS.enc.Utf8);
 
         if (originalPassword !== password) {
-            throw new Error('Wrong password or username!');
+            res.status(401).json({ error: 'Wrong credentials' });
         }
 
         const accessToken = jwt.sign(
